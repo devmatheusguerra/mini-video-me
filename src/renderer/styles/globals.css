@@ -73,6 +73,22 @@ video {
 
 #wrapper.has-border:before {
   background: var(--border-color);
+  transform: rotate(0deg);
+  animation-name: borderRotate;
+  animation-duration: 5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: forwards;
+}
+
+@keyframes borderRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 #wrapper.has-clip-path:before,

@@ -52,6 +52,10 @@ export const userPreferencesSchema: Schema<typeof defaultStore> = {
       smoothing: {
         type: JSONSchemaType.Boolean,
       },
+
+      speed: {
+        type: JSONSchemaType.Number,
+      },
     },
   },
 

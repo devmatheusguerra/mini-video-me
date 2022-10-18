@@ -58,6 +58,7 @@ export function getDefaultStore() {
       height: 1080,
       frameRate: 60,
       smoothing: true,
+      speed: 0.1,
     },
 
     anchor: {
