@@ -41,7 +41,7 @@ export function getDefaultStore() {
         id: 'custom',
         displayName: 'Custom',
         textColor: '#fff',
-        borderColor: 'linear-gradient(to right, #988BC7, #FF79C6)',
+        borderColor: 'linear-gradient(to right, #ffb899, #ff9034)',
         borderWidth: '5px',
       },
     ],
@@ -57,6 +57,7 @@ export function getDefaultStore() {
       width: 1920,
       height: 1080,
       frameRate: 60,
+      smoothing: true,
     },
 
     anchor: {

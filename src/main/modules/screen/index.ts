@@ -33,6 +33,8 @@ export class ScreenModule {
   private isScreenVisible = true
   private currentX = 0
   private currentY = 0
+  private isMoving = false
+  private smoothing = userPreferences.store.camera.smoothing
 
   private windowPositionByScreenSize: Record<
     ScreenSize,
@@ -220,39 +222,123 @@ export class ScreenModule {
   }
 
   moveWindowToScreenEdge(edge = this.currentScreenEdge) {
-    this.currentScreenEdge = edge
+    if (this.isMoving) return
 
-    const { x, y } = this.window.getBounds()
-    const display = _screen.getDisplayNearestPoint({ x, y })
+    if (this.smoothing) {
+      this.isMoving = true
+      this.currentScreenEdge = edge
 
-    const bounds = { x: display.bounds.x, y: display.bounds.y }
-    const { width, height } = this.getScreenSizeInPixels()
+      const { x, y } = this.window.getBounds()
+      const display = _screen.getDisplayNearestPoint({ x, y })
+      const bounds = { x: display.bounds.x, y: display.bounds.y }
+      const { width, height } = this.getScreenSizeInPixels()
 
-    const SCREEN_PADDING = 24
+      const SCREEN_PADDING = 24
 
-    switch (edge) {
-      case 'top-left':
-        bounds.x += SCREEN_PADDING
-        bounds.y += SCREEN_PADDING
-        break
+      switch (edge) {
+        case 'top-left':
+          bounds.x += SCREEN_PADDING
+          bounds.y += SCREEN_PADDING
+          break
 
-      case 'bottom-left':
-        bounds.x += SCREEN_PADDING
-        bounds.y += display.size.height - height - SCREEN_PADDING
-        break
+        case 'bottom-left':
+          bounds.x += SCREEN_PADDING
+          bounds.y += display.size.height - height - SCREEN_PADDING
+          break
 
-      case 'top-right':
-        bounds.x += display.size.width - width - SCREEN_PADDING
-        bounds.y += SCREEN_PADDING
-        break
+        case 'top-right':
+          bounds.x += display.size.width - width - SCREEN_PADDING
+          bounds.y += SCREEN_PADDING
+          break
 
-      case 'bottom-right':
-        bounds.x += display.size.width - width - SCREEN_PADDING
-        bounds.y += display.size.height - height - SCREEN_PADDING
-        break
+        case 'bottom-right':
+          bounds.x += display.size.width - width - SCREEN_PADDING
+          bounds.y += display.size.height - height - SCREEN_PADDING
+          break
+      }
+
+      const intervalo = setInterval(() => {
+        const { x, y } = this.window.getBounds()
+
+        if (x === bounds.x && y === bounds.y) {
+          this.isMoving = false
+          return clearInterval(intervalo)
+        }
+
+        const toUP = bounds.y < y
+        const toLEFT = bounds.x < x
+        const distance_x = Math.abs(bounds.x - x)
+        const distance_y = Math.abs(bounds.y - y)
+        const distance = Math.max(distance_x, distance_y)
+        const step = Math.max(10, Math.round(distance / 10))
+        let temp_y
+        let temp_x
+        if (x !== bounds.x || y !== bounds.y) {
+          if (toUP) {
+            if (Math.abs(y - bounds.y) > step + 10) temp_y = y - step
+            else temp_y = y
+          } else {
+            if (Math.abs(y - bounds.y) > step + 10) temp_y = y + step
+            else temp_y = y
+          }
+
+          if (toLEFT) {
+            if (Math.abs(x - bounds.x) > step + 10) temp_x = x - step
+            else temp_x = x
+          } else {
+            if (Math.abs(x - bounds.x) > step + 10) temp_x = x + step
+            else temp_x = x
+          }
+        }
+        this.setWindowBounds({ x: temp_x, y: temp_y })
+
+        // Clear interval when window is in or near the target position
+        if (
+          Math.abs(bounds.x - x) < step + 10 &&
+          Math.abs(bounds.y - y) < step + 10
+        ) {
+          this.isMoving = false
+          this.setWindowBounds(bounds)
+          clearInterval(intervalo)
+        }
+      }, 15)
+    } else {
+      this.isMoving = true
+      this.currentScreenEdge = edge
+
+      const { x, y } = this.window.getBounds()
+      const display = _screen.getDisplayNearestPoint({ x, y })
+
+      const bounds = { x: display.bounds.x, y: display.bounds.y }
+      const { width, height } = this.getScreenSizeInPixels()
+
+      const SCREEN_PADDING = 24
+
+      switch (edge) {
+        case 'top-left':
+          bounds.x += SCREEN_PADDING
+          bounds.y += SCREEN_PADDING
+          break
+
+        case 'bottom-left':
+          bounds.x += SCREEN_PADDING
+          bounds.y += display.size.height - height - SCREEN_PADDING
+          break
+
+        case 'top-right':
+          bounds.x += display.size.width - width - SCREEN_PADDING
+          bounds.y += SCREEN_PADDING
+          break
+
+        case 'bottom-right':
+          bounds.x += display.size.width - width - SCREEN_PADDING
+          bounds.y += display.size.height - height - SCREEN_PADDING
+          break
+      }
+
+      this.setWindowBounds(bounds)
+      this.isMoving = false
     }
-
-    this.setWindowBounds(bounds)
   }
 
   toggleWindowVisibility() {

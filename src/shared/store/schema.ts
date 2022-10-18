@@ -49,6 +49,9 @@ export const userPreferencesSchema: Schema<typeof defaultStore> = {
       frameRate: {
         type: JSONSchemaType.Number,
       },
+      smoothing: {
+        type: JSONSchemaType.Boolean,
+      },
     },
   },
 
